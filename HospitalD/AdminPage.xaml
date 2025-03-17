@@ -13,7 +13,7 @@
             <Button Content="Сотрудники" Style="{StaticResource MenuButtonStyle}" Click="Staff_Click"/>
             <Button Content="Пациенты" Style="{StaticResource MenuButtonStyle}" Click="Patients_Click"/>
             <Button Content="Диагнозы" Style="{StaticResource MenuButtonStyle}" Click="Diagnoses_Click"/>
-            <Button Content="Мед.книжки" Style="{StaticResource MenuButtonStyle}" Click="MedicalProcedures_Click"/>
+            <Button Content="Мед.процедуры" Style="{StaticResource MenuButtonStyle}" Click="MedicalProcedures_Click"/>
             <Button Content="Лекарства" Style="{StaticResource MenuButtonStyle}" Click="Medications_Click"/>
             <Button Content="Выйти" Style="{StaticResource LogoutButtonStyle}" Click="Logout_Click"/>
         </StackPanel>

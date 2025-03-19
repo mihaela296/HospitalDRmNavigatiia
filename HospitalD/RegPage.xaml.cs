@@ -63,7 +63,6 @@ namespace HospitalD
                     Phone = phoneNumberTextBox.Text,
                     Address = addressTextBox.Text,
                     ID_Role = 3,
-                    Password = GetHash(passwordRegBox.Password)
                 };
 
                 try // Добавляем блок try-catch для обработки исключений валидации

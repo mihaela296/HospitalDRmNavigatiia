@@ -16,20 +16,12 @@
 
         <DataGrid Grid.Row="0" Name="PatientsDataGrid" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="ФИО" Binding="{Binding FullName}"/>
-                <DataGridTextColumn Header="Дата рождения" Binding="{Binding BirthDate}"/>
-                <DataGridTextColumn Header="Пол" Binding="{Binding Gender}"/>
-                <DataGridTextColumn Header="Номер телефона" Binding="{Binding Phone}"/>
-                <DataGridTextColumn Header="Андрес" Binding="{Binding Address}"/>
-                <DataGridTextColumn Header="Роль" Binding="{Binding ID_Role}"/>
-
-                <DataGridTemplateColumn Width="*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Name="ButtonEdit" Content="Редактировать" Click="ButtonEdit_OnClick" HorizontalAlignment="Left" Width="300" Background="Aqua"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="ФИО" Binding="{Binding FullName}" />
+                <DataGridTextColumn Header="Дата рождения" Binding="{Binding BirthDate, StringFormat={}{0:dd.MM.yyyy}}" />
+                <DataGridTextColumn Header="Пол" Binding="{Binding Gender}" />
+                <DataGridTextColumn Header="Номер телефона" Binding="{Binding Phone}" />
+                <DataGridTextColumn Header="Адрес" Binding="{Binding Address}" />
+                <DataGridTextColumn Header="Роль" Binding="{Binding RoleID}" />
             </DataGrid.Columns>
         </DataGrid>
 

@@ -24,7 +24,7 @@ namespace HospitalD
         public MedicalProceduresPage()
         {
             InitializeComponent();
-            MedicalProceduresDataGrid.ItemsSource = HospitalDRmEntities.GetContext().MedicalProcedures.ToList();
+            MedicalProceduresDataGrid.ItemsSource = new HospitalDRmEntities().MedicalProcedures.ToList();
         }
         private void ButtonEdit_OnClick(object sender, RoutedEventArgs e)
         {

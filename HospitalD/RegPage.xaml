@@ -20,8 +20,8 @@
 
             <TextBlock Text="Пол:"/>
             <ComboBox x:Name="genderComboBox" Margin="0,5">
-                <ComboBoxItem Content="Мужской"/>
-                <ComboBoxItem Content="Женский"/>
+                <ComboBoxItem Content="М"/>
+                <ComboBoxItem Content="Ж"/>
             </ComboBox>
 
             <TextBlock Text="Придумайте логин:"/>

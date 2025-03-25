@@ -24,7 +24,7 @@ namespace HospitalD
         public StaffPage()
         {
             InitializeComponent();
-            StaffDataGrid.ItemsSource = HospitalDRmEntities.GetContext().Staff.ToList();
+            StaffDataGrid.ItemsSource = new HospitalDRmEntities().Staff.ToList();
         }
         private void ButtonEdit_OnClick(object sender, RoutedEventArgs e)
         {

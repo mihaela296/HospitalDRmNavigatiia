@@ -19,13 +19,7 @@ namespace HospitalD
             : base("name=HospitalDRmEntities")
         {
         }
-        private static HospitalDRmEntities _context;//приватная переменная
-
-        public static HospitalDRmEntities GetContext()
-        {
-            if (_context == null) _context = new HospitalDRmEntities();
-            return _context;
-        }
+    
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();

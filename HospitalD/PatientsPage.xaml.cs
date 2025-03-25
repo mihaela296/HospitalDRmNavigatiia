@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -21,10 +22,19 @@ namespace HospitalD
     /// </summary>
     public partial class PatientsPage : Page
     {
+
+        private string _gender;
+
+        [StringLength(1)]
+        public string Gender
+        {
+            get => _gender;
+            set => _gender = (value == "М" || value == "Ж") ? value : null;
+        }
         public PatientsPage()
         {
             InitializeComponent();
-            PatientsDataGrid.ItemsSource = HospitalDRmEntities.GetContext().Patients.ToList();
+            PatientsDataGrid.ItemsSource = new HospitalDRmEntities().Patients.ToList();
         }
         private void ButtonEdit_OnClick(object sender, RoutedEventArgs e)
         {
@@ -50,7 +60,7 @@ namespace HospitalD
 
             if (selectedPatient != null)
             {
-                var context = HospitalDRmEntities.GetContext();
+                var context = new HospitalDRmEntities();
 
                 // Проверка наличия связанных данных в таблице Users
                 var hasRelatedData = context.Users.Any(u => u.ID_User == selectedPatient.ID_Patient);

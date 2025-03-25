@@ -3,100 +3,143 @@ using System.Data.Entity.Validation;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using BCrypt.Net;
-
+using System.Security.Cryptography;
+using System.Text;
 
 namespace HospitalD
 {
     public partial class AddEditPatientPage : Page
     {
-        private Patients _currentPatient = new Patients();
+        private Patients _currentPatient;
+        private readonly HospitalDRmEntities _context = new HospitalDRmEntities();
 
         public AddEditPatientPage(Patients selectedPatient = null)
         {
             InitializeComponent();
+            _currentPatient = selectedPatient != null
+                ? _context.Patients.Find(selectedPatient.ID_Patient)
+                : new Patients();
 
-            if (selectedPatient != null)
-            {
-                _currentPatient = selectedPatient;
-                TextBoxFullName.Text = _currentPatient.FullName;
-                DatePickerBirthDate.SelectedDate = _currentPatient.BirthDate;
-                ComboBoxGender.SelectedItem = _currentPatient.Gender;
-                TextBoxPhone.Text = _currentPatient.Phone;
-                TextBoxAddress.Text = _currentPatient.Address;
-            }
+            LoadPatientData();
+        }
+
+        private void LoadPatientData()
+        {
+            if (_currentPatient == null) return;
+
+            TextBoxFullName.Text = _currentPatient.FullName;
+            DatePickerBirthDate.SelectedDate = _currentPatient.BirthDate;
+            ComboBoxGender.SelectedItem = GetGenderComboBoxItem(_currentPatient.Gender);
+            TextBoxPhone.Text = _currentPatient.Phone;
+            TextBoxAddress.Text = _currentPatient.Address;
+        }
+
+        private ComboBoxItem GetGenderComboBoxItem(string gender)
+        {
+            return ComboBoxGender.Items
+                .Cast<ComboBoxItem>()
+                .FirstOrDefault(item => item.Content.ToString().StartsWith(gender ?? ""));
         }
 
         private void SavePatient_Click(object sender, RoutedEventArgs e)
         {
+            if (!ValidateInputs()) return;
+
             try
             {
-                // Проверка заполнения полей
-                if (string.IsNullOrWhiteSpace(TextBoxFullName.Text) ||
-                    DatePickerBirthDate.SelectedDate == null ||
-                    ComboBoxGender.SelectedItem == null ||
-                    string.IsNullOrWhiteSpace(TextBoxPhone.Text) ||
-                    string.IsNullOrWhiteSpace(TextBoxAddress.Text))
+                UpdatePatientData();
+
+                if (_currentPatient.ID_Patient == 0)
                 {
-                    MessageBox.Show("Заполните все обязательные поля!", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+                    SetNewPatientPassword();
+                    _context.Patients.Add(_currentPatient);
                 }
 
-                // Заполнение данных пациента
-                _currentPatient.FullName = TextBoxFullName.Text;
-                _currentPatient.BirthDate = DatePickerBirthDate.SelectedDate.Value;
-                _currentPatient.Gender = (ComboBoxGender.SelectedItem as ComboBoxItem)?.Content.ToString();
-                _currentPatient.Phone = TextBoxPhone.Text;
-                _currentPatient.Address = TextBoxAddress.Text;
-
-                // Получаем контекст базы данных
-                var context = HospitalDRmEntities.GetContext();
-
-                // Находим роль "Пациент" в таблице Roles по ID
-                var patientRole = context.Roles.FirstOrDefault(r => r.ID_Role == 3);
-
-                // Если роль найдена, присваиваем ID_Role пациенту
-                if (patientRole != null)
-                {
-                    _currentPatient.ID_Role = patientRole.ID_Role;
-                }
-                else
-                {
-                    try
-                    {
-                        // Если роль не найдена, добавляем ее
-                        var newRole = new Roles { ID_Role = 3, Name = "Пациент" };
-                        context.Roles.Add(newRole);
-                        context.SaveChanges();
-                        _currentPatient.ID_Role = newRole.ID_Role;
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Ошибка при добавлении роли: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return; // Прерываем сохранение, если возникла ошибка при добавлении роли
-                    }
-                }
-
-                // Добавление или обновление пациента в базе данных
-                if (_currentPatient.ID_Patient == 0) // Новый пациент
-                {
-                    context.Patients.Add(_currentPatient);
-                }
-                context.SaveChanges();
-
-                MessageBox.Show("Данные пациента успешно сохранены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                _context.SaveChanges();
+                ShowSuccessMessage();
                 NavigationService.GoBack();
+            }
+            catch (DbEntityValidationException ex)
+            {
+                ShowValidationErrors(ex);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка при сохранении данных: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка при сохранении: {ex.InnerException?.Message ?? ex.Message}",
+                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
+        private bool ValidateInputs()
+        {
+            if (string.IsNullOrWhiteSpace(TextBoxFullName.Text) ||
+                DatePickerBirthDate.SelectedDate == null ||
+                ComboBoxGender.SelectedItem == null ||
+                string.IsNullOrWhiteSpace(TextBoxPhone.Text))
+            {
+                MessageBox.Show("Заполните все обязательные поля!", "Ошибка",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+            return true;
+        }
+
+        private void UpdatePatientData()
+        {
+            _currentPatient.FullName = TextBoxFullName.Text.Trim();
+            _currentPatient.BirthDate = DatePickerBirthDate.SelectedDate.Value;
+            _currentPatient.Gender = (ComboBoxGender.SelectedItem as ComboBoxItem)?.Content.ToString()[0].ToString();
+            _currentPatient.Phone = TextBoxPhone.Text.Trim();
+            _currentPatient.Address = TextBoxAddress.Text?.Trim();
+            _currentPatient.ID_Role = 3;
+        }
+
+        private void SetNewPatientPassword()
+        {
+            string tempPassword = GenerateTempPassword();
+            _currentPatient.Password = GetHash(tempPassword);
+            MessageBox.Show($"Временный пароль пациента: {tempPassword}",
+                "Пароль", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ShowSuccessMessage()
+        {
+            MessageBox.Show("Данные пациента успешно сохранены!",
+                "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ShowValidationErrors(DbEntityValidationException ex)
+        {
+            var errorMessages = ex.EntityValidationErrors
+                .SelectMany(x => x.ValidationErrors)
+                .Select(x => $"{x.PropertyName}: {x.ErrorMessage}");
+
+            MessageBox.Show("Ошибки валидации:\n" + string.Join("\n", errorMessages),
+                "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private string GenerateTempPassword()
+        {
+            const string chars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789";
+            var random = new Random();
+            return new string(Enumerable.Repeat(chars, 8)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        private string GetHash(string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
+            }
+        }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
+            _context.Dispose();
             NavigationService.GoBack();
         }
+
     }
 }

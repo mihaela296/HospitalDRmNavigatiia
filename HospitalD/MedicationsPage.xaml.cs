@@ -24,7 +24,7 @@ namespace HospitalD
         public MedicationsPage()
         {
             InitializeComponent();
-            MedicationsDataGrid.ItemsSource = HospitalDRmEntities.GetContext().Medications.ToList();
+            MedicationsDataGrid.ItemsSource = new HospitalDRmEntities().Medications.ToList();
         }
         private void ButtonEdit_OnClick(object sender, RoutedEventArgs e)
         {

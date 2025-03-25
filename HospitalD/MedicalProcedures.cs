@@ -23,7 +23,7 @@ namespace HospitalD
         public int ID_Procedure { get; set; }
         public string Name { get; set; }
         public int ID_Staff { get; set; }
-        public string Duration { get; set; }
+        public int Duration { get; set; }
         public decimal Cost { get; set; }
     
         public virtual Staff Staff { get; set; }
